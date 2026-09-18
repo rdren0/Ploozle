@@ -43,7 +43,7 @@ import { appendToQueue } from "./lib/queueAdd";
 import { isStalePlayback } from "./lib/stalePlayback";
 
 /** Where questions, bugs and requests go. Mirrored in the manifest's homepage_url. */
-const ISSUES_URL = "https://github.com/rdren0/Tabletop-Tunes/issues";
+const ISSUES_URL = "https://github.com/rdren0/Ploozle/issues";
 /** The fallback channel: opening a GitHub issue requires an account, and most
  *  people at a table won't have one. */
 const SUPPORT_EMAIL = "rdrennan0@gmail.com";
@@ -974,7 +974,7 @@ export default function App() {
             {/* The address is the link text on purpose: a sandboxed iframe may
                 refuse to open a mailto:, and a dead link with no visible
                 address would leave someone with nowhere to go. */}
-            <a href={`mailto:${SUPPORT_EMAIL}?subject=Tabletop%20Tunes`}>{SUPPORT_EMAIL}</a>
+            <a href={`mailto:${SUPPORT_EMAIL}?subject=Ploozle`}>{SUPPORT_EMAIL}</a>
           </p>
         )}
       </div>

@@ -59,7 +59,7 @@ function Harness() {
   return (
     <div className="harness">
       <div className="harness-bar">
-        <strong>Tabletop Tunes preview</strong>
+        <strong>Ploozle preview</strong>
         <label>
           Theme
           <select value={mode} onChange={(e) => setMode(e.target.value as "LIGHT" | "DARK")}>

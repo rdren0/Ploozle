@@ -14,8 +14,8 @@ import OBR from "@owlbear-rodeo/sdk";
  * so it is only consulted when localStorage gave us nothing at all.
  */
 
-const STORAGE_KEY = "rodeo.tabletoptunes/audio";
-const METADATA_KEY = "rodeo.tabletoptunes/audio";
+const STORAGE_KEY = "rodeo.ploozle/audio";
+const METADATA_KEY = "rodeo.ploozle/audio";
 
 /** Ambient music should sit under the table's conversation, not over it. */
 export const DEFAULT_VOLUME = 40;

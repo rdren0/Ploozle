@@ -131,7 +131,7 @@ export interface PartyMember extends AdvancerCandidate {
  * Presence lives in each player's own metadata rather than the shared room key,
  * so these frequent writes can't collide with anyone else's.
  */
-const PRESENCE_KEY = "rodeo.tabletoptunes/presence";
+const PRESENCE_KEY = "rodeo.ploozle/presence";
 const PRESENCE_INTERVAL_MS = PRESENCE_TTL_MS / 3;
 /** Publishes this client's own presence for as long as the panel is open. */
 export function usePresence(ready: boolean) {

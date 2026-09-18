@@ -432,7 +432,7 @@ function YouTubeStage({
       // has already navigated it — never granted the permission at all. The
       // ambience layers were fixed the same way; this one was missed.
       const frame = document.createElement("iframe");
-      frame.title = "Tabletop Tunes player";
+      frame.title = "Ploozle player";
       frame.allow = "autoplay; encrypted-media";
       frame.width = "100%";
       frame.height = "100%";

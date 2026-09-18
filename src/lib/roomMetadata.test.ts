@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { EMPTY_ROOM_STATE, QueueItem, ROOM_METADATA_KEY, RoomState } from "../types";
 import { hasLegacyState, metadataUpdateFor, readRoomState } from "./roomMetadata";
 
-const PLAYBACK = "rodeo.tabletoptunes/playback";
-const QUEUE = "rodeo.tabletoptunes/queue";
-const REQUESTS = "rodeo.tabletoptunes/requests";
-const ACCESS = "rodeo.tabletoptunes/access";
+const PLAYBACK = "rodeo.ploozle/playback";
+const QUEUE = "rodeo.ploozle/queue";
+const REQUESTS = "rodeo.ploozle/requests";
+const ACCESS = "rodeo.ploozle/access";
 
 function track(id: string): QueueItem {
   return {
@@ -116,7 +116,7 @@ describe("metadataUpdateFor", () => {
     it("writes every group so nothing in the legacy key is lost", () => {
       const update = metadataUpdateFor(next, { isPlaying: true }, true);
       expect(new Set(Object.keys(update))).toEqual(
-        new Set([PLAYBACK, QUEUE, REQUESTS, ACCESS, "rodeo.tabletoptunes/ambience", ROOM_METADATA_KEY])
+        new Set([PLAYBACK, QUEUE, REQUESTS, ACCESS, "rodeo.ploozle/ambience", ROOM_METADATA_KEY])
       );
     });
 

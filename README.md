@@ -1,17 +1,17 @@
-# Tabletop Tunes
+# Ploozle
 
 An [Owlbear Rodeo](https://www.owlbear.rodeo/) extension that plays music in
 sync with your party. Paste YouTube links, build a queue, and when the GM hits
 play everyone hears the same thing at the same point in the track.
 
-**Site:** [tabletop-tunes.com](https://tabletop-tunes.com) — where the
+**Site:** [ploozle.netlify.app](https://ploozle.netlify.app) — where the
 extension is hosted and what Owlbear loads into the popover. Opened directly in
 a browser it has no room to talk to, so it waits on Owlbear rather than showing
 the panel; the extension proper appears once it is installed and opened from
 the toolbar.
 
 **Install:** add
-[`https://tabletop-tunes.com/manifest.json`](https://tabletop-tunes.com/manifest.json)
+[`https://ploozle.netlify.app/manifest.json`](https://ploozle.netlify.app/manifest.json)
 in Owlbear Rodeo under your profile menu → Add Extension.
 
 <img src="public/screenshots/dm-playlist-multiple.png"
@@ -108,5 +108,5 @@ looks broken.
 ## Support
 
 Bug reports, questions and feature requests are welcome at
-[the issue tracker](https://github.com/rdren0/Tabletop-Tunes/issues), or by
+[the issue tracker](https://github.com/rdren0/Ploozle/issues), or by
 email to <rdrennan0@gmail.com> if you'd rather not create a GitHub account.

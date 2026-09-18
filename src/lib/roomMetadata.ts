@@ -11,11 +11,11 @@ import { EMPTY_ROOM_STATE, ROOM_METADATA_KEY, RoomState } from "../types";
  * that is inherent — but a request can no longer undo a track change.
  */
 export const METADATA_GROUPS = {
-  "rodeo.tabletoptunes/playback": ["currentIndex", "isPlaying", "anchorPosition", "anchorAt"],
-  "rodeo.tabletoptunes/queue": ["queue"],
-  "rodeo.tabletoptunes/requests": ["requests"],
-  "rodeo.tabletoptunes/access": ["djIds"],
-  "rodeo.tabletoptunes/ambience": ["ambience"],
+  "rodeo.ploozle/playback": ["currentIndex", "isPlaying", "anchorPosition", "anchorAt"],
+  "rodeo.ploozle/queue": ["queue"],
+  "rodeo.ploozle/requests": ["requests"],
+  "rodeo.ploozle/access": ["djIds"],
+  "rodeo.ploozle/ambience": ["ambience"],
 } as const satisfies Record<string, readonly (keyof RoomState)[]>;
 
 type GroupKey = keyof typeof METADATA_GROUPS;

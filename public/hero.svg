@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="Tabletop Tunes — music in sync with your party">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="Ploozle — music in sync with your party">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#22222a"/>
@@ -32,7 +32,7 @@
 
   <g font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
     <text x="460" y="290" fill="#f2f2f5" font-size="86" font-weight="700"
-          letter-spacing="-1.5">Tabletop Tunes</text>
+          letter-spacing="-1.5">Ploozle</text>
     <text x="464" y="352" fill="#c3b0ff" font-size="34" font-weight="500">
       Music in sync with your party
     </text>

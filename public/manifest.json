@@ -1,14 +1,14 @@
 {
-  "name": "Tabletop Tunes",
+  "name": "Ploozle",
   "version": "2.58.0",
   "manifest_version": 1,
   "author": "RDrennan",
   "description": "Queue and play YouTube videos and playlists in sync with your party.",
-  "homepage_url": "https://github.com/rdren0/Tabletop-Tunes",
-  "icon": "https://tabletop-tunes.com/store-icon.svg",
+  "homepage_url": "https://github.com/rdren0/Ploozle",
+  "icon": "https://ploozle.netlify.app/store-icon.svg",
   "action": {
-    "title": "Tabletop Tunes",
-    "icon": "https://tabletop-tunes.com/icon.svg",
+    "title": "Ploozle",
+    "icon": "https://ploozle.netlify.app/icon.svg",
     "popover": "/",
     "height": 460,
     "width": 380

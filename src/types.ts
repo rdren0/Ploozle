@@ -80,7 +80,7 @@ export const EMPTY_ROOM_STATE: RoomState = {
   anchorAt: 0,
 };
 
-export const ROOM_METADATA_KEY = "rodeo.tabletoptunes/state";
+export const ROOM_METADATA_KEY = "rodeo.ploozle/state";
 
 /** Seconds of drift tolerated before a client seeks to catch up. */
 export const SYNC_TOLERANCE_SECONDS = 2;

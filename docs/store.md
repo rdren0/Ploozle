@@ -1,23 +1,24 @@
 ---
-title: Tabletop Tunes
+title: Ploozle
 description: Queue YouTube music and play it in sync with your whole party
 author: RDrennan
-image: https://tabletop-tunes.com/hero.svg
-icon: https://tabletop-tunes.com/store-icon.svg
+image: https://ploozle.netlify.app/hero.svg
+icon: https://ploozle.netlify.app/store-icon.svg
 tags:
   - audio
   - tool
-manifest: https://tabletop-tunes.com/manifest.json
-learn-more: https://github.com/rdren0/Tabletop-Tunes
+  - automation
+manifest: https://ploozle.netlify.app/manifest.json
+learn-more: https://github.com/rdren0/Ploozle
 ---
 
-# Tabletop Tunes
+# Ploozle
 
 Shared music for your table. Paste a YouTube link, build a queue, and when you
 hit play everyone hears the same track at the same moment — no counting down
 over voice chat, no one lagging half a verse behind.
 
-![The Tabletop Tunes panel with a queue of three tracks, the first cued and waiting to be started](https://tabletop-tunes.com/screenshots/dm-playlist-multiple.png)
+![The Ploozle panel with a queue of three tracks, the first cued and waiting to be started](https://ploozle.netlify.app/screenshots/dm-playlist-multiple.png)
 
 **Getting started.** Open the panel from the toolbar, paste a YouTube video or
 playlist link, and press Add. Nothing plays until you say so — the first track
@@ -44,9 +45,9 @@ By default the GM controls everything. Grant **DJ** access to any player and
 they get the same queue and transport controls — useful when someone else is
 running a scene, or when you'd rather not be the one picking tracks all night.
 
-![The GM's DJ privileges panel, with a Make DJ button beside a player's name](https://tabletop-tunes.com/screenshots/dm-player-dj-add.png)
+![The GM's DJ privileges panel, with a Make DJ button beside a player's name](https://ploozle.netlify.app/screenshots/dm-player-dj-add.png)
 
-![The same player's panel once granted, showing the queue and transport controls](https://tabletop-tunes.com/screenshots/player-dj-access-granted.png)
+![The same player's panel once granted, showing the queue and transport controls](https://ploozle.netlify.app/screenshots/player-dj-access-granted.png)
 
 ## Requests from the table
 
@@ -54,7 +55,7 @@ Players without control can suggest a track instead. It goes to the GM and any
 DJs to approve or decline, and — unlike a suggestion shouted over voice chat —
 the person who asked is actually told what happened to it.
 
-![A listener's panel: the queue, the request box, and why the room is quiet](https://tabletop-tunes.com/screenshots/player-playlist-multiple.png)
+![A listener's panel: the queue, the request box, and why the room is quiet](https://ploozle.netlify.app/screenshots/player-playlist-multiple.png)
 
 ## Built to sit in the corner
 
@@ -89,7 +90,7 @@ so when it's waiting on you, so nobody has to remember.
 
 Bug reports, questions and requests are all welcome.
 
-- Issue tracker: <https://github.com/rdren0/Tabletop-Tunes/issues>
+- Issue tracker: <https://github.com/rdren0/Ploozle/issues>
 - Email: rdrennan0@gmail.com
 
 You don't need a GitHub account to email.
