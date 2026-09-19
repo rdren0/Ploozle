@@ -269,7 +269,7 @@ body {
   min-width: 0;
 }
 
-.volume input {
+.volume input[type="range"] {
   flex: 1;
   min-width: 0;
   accent-color: var(--accent);
@@ -279,12 +279,53 @@ body {
    and a track that resized as the digits changed would drag the thumb out
    from under the cursor mid-slide. */
 .volume-readout {
+  display: flex;
+  align-items: center;
+  gap: 1px;
   flex-shrink: 0;
-  min-width: 4ch;
-  text-align: right;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   color: var(--text-dim);
+}
+
+/* Sits flush as a readout until it's hovered or focused, when it admits to
+   being a field. A box outlined at rest would read as somewhere text is
+   expected, and most of the time nobody is typing a number — they're glancing
+   at one. */
+.volume-entry {
+  width: 3.5ch;
+  padding: 2px 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.volume-entry:hover {
+  border-color: var(--border-strong);
+}
+
+.volume-entry:focus {
+  border-color: var(--accent);
+  outline: none;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* The spinners would double the field's width for a pair of arrows that are
+   too small to hit and duplicate the − and + already on the row. */
+.volume-entry::-webkit-outer-spin-button,
+.volume-entry::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.volume-entry {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .hint {
@@ -369,8 +410,22 @@ body {
 
   /* Taller track, so the drag can be started anywhere near it rather than
      exactly on a few pixels of thumb. */
-  .volume input {
+  .volume input[type="range"] {
     height: 32px;
+  }
+
+  /* A typed level is the control that still works when the track is too fine
+     for a fingertip, so the field has to be tappable and the number legible.
+     It carries its border at rest here: there is no hover on a touchscreen to
+     reveal that it can be typed into. */
+  .volume-readout {
+    font-size: 14px;
+  }
+
+  .volume-entry {
+    border-color: var(--border-strong);
+    padding: 8px 2px;
+    width: 4ch;
   }
 }
 

@@ -32,12 +32,13 @@ import {
   savePrefs,
 } from "./lib/preferences";
 import {
-  MAX_SLIDER,
-  VOLUME_STEP_RUNGS,
-  sliderToVolume,
+  VOLUME_MAX,
+  VOLUME_MIN,
+  VOLUME_STEP,
+  clampVolume,
+  parseVolumeInput,
   stepVolume,
-  volumeToSlider,
-} from "./lib/volumeCurve";
+} from "./lib/volumeLevel";
 import { initialWatch, observedRoom } from "./lib/roomStart";
 import { appendToQueue } from "./lib/queueAdd";
 import { isStalePlayback } from "./lib/stalePlayback";
@@ -71,6 +72,13 @@ export default function App() {
   const [muted, setMuted] = useState(
     () => storedPrefs.current?.muted ?? DEFAULT_AUDIO_PREFS.muted
   );
+  /**
+   * What the typed readout is showing while it is being typed into, which is
+   * not always a volume: a field cleared to backspace over it is empty, and
+   * "1" on its way to "15" is a real volume nobody asked for. Null means
+   * nobody is typing and the field just shows `volume`.
+   */
+  const [volumeDraft, setVolumeDraft] = useState<string | null>(null);
   // True when the browser refused audio and playback started muted, so the
   // speaker button can be explained rather than just looking wrong.
   const [autoMuted, setAutoMuted] = useState(false);
@@ -116,11 +124,21 @@ export default function App() {
 
   /**
    * One press of the quieter/louder buttons. A muted listener counts as being
-   * at the bottom of the ladder, so pressing louder walks up from silence
+   * at the bottom of the range, so pressing louder walks up from silence
    * rather than leaping back to whatever they were on before they muted.
    */
-  function nudgeVolume(rungs: number) {
-    const next = stepVolume(muted ? 0 : volume, rungs);
+  function nudgeVolume(delta: number) {
+    applyVolume(stepVolume(muted ? 0 : volume, delta));
+  }
+
+  /**
+   * Every route a listener has to a level — the track, the steppers, the typed
+   * readout — lands here, so they all treat a move off silence the same way.
+   */
+  function applyVolume(level: number) {
+    const next = clampVolume(level);
+    // Reaching for a level at all is an intent to hear something, unless the
+    // level reached for is zero, which is the opposite.
     if (muted && next > 0) {
       unmuteNow(next);
       return;
@@ -635,54 +653,78 @@ export default function App() {
             {muted || volume === 0 ? "🔇" : "🔊"}
           </button>
           {/* Steppers either side of the track. A slider is the awkward control
-              on a phone — a fingertip covers several rungs at once — and these
-              hit an exact level without a drag. They cost the track some width,
-              which is the trade: a tap that lands is worth more than a drag
-              that has to be repeated. */}
+              on a phone — at a hundred steps across a couple of hundred pixels
+              a fingertip covers several at once — and these hit an exact level
+              without a drag. They cost the track some width, which is the
+              trade: a tap that lands is worth more than a drag that has to be
+              repeated. */}
           <button
             type="button"
             className="volume-step"
-            onClick={() => nudgeVolume(-VOLUME_STEP_RUNGS)}
-            disabled={muted || volume <= 0}
-            aria-label="Quieter"
-            title="Quieter"
+            onClick={() => nudgeVolume(-VOLUME_STEP)}
+            disabled={muted || volume <= VOLUME_MIN}
+            aria-label={`Quieter, ${VOLUME_STEP} percent`}
+            title={`Quieter (${VOLUME_STEP}%)`}
           >
             −
           </button>
-          {/* The track carries rungs of the volume ladder, not volumes: see
-              lib/volumeCurve. Everything either side of this input — state,
-              storage, the player — is in plain 0-100 volume. */}
+          {/* One step per percent, so the track can reach any level the typed
+              readout can. */}
           <input
             type="range"
-            min={0}
-            max={MAX_SLIDER}
-            value={volumeToSlider(muted ? 0 : volume)}
+            min={VOLUME_MIN}
+            max={VOLUME_MAX}
+            step={1}
+            value={muted ? 0 : volume}
             aria-label="Volume"
-            /* Otherwise a screen reader announces the curve's position rather
-               than the volume the number beside it is showing. */
             aria-valuetext={`${muted ? 0 : volume}%`}
-            onChange={(e) => {
-              const next = sliderToVolume(Number(e.target.value));
-              setVolume(next);
-              // Moving the slider is itself an intent to hear something —
-              // unless it was moved to the stop, which is the opposite.
-              if (muted && next > 0) unmuteNow(next);
-              else rememberAudio({ volume: next, muted });
-            }}
+            onChange={(e) => applyVolume(Number(e.target.value))}
           />
           <button
             type="button"
             className="volume-step"
-            onClick={() => nudgeVolume(VOLUME_STEP_RUNGS)}
-            disabled={!muted && volume >= 100}
-            aria-label="Louder"
-            title="Louder"
+            onClick={() => nudgeVolume(VOLUME_STEP)}
+            disabled={!muted && volume >= VOLUME_MAX}
+            aria-label={`Louder, ${VOLUME_STEP} percent`}
+            title={`Louder (${VOLUME_STEP}%)`}
           >
             +
           </button>
-          <span className="volume-readout" aria-hidden="true">
-            {muted ? 0 : volume}%
-          </span>
+          {/* Typed, not just read. Matching music to a room is easier by number
+              than by drag, and a level someone knows they want — 65, whatever
+              last week's was — should be sayable rather than hunted for. */}
+          <label className="volume-readout">
+            <input
+              type="number"
+              inputMode="numeric"
+              min={VOLUME_MIN}
+              max={VOLUME_MAX}
+              step={1}
+              className="volume-entry"
+              aria-label="Volume percent"
+              /* While the field is being typed into it shows the draft, which
+                 may be empty or half a number. Everywhere else it shows the
+                 volume, so a drag or a stepper press moves it too. */
+              value={volumeDraft ?? String(muted ? 0 : volume)}
+              onChange={(e) => {
+                setVolumeDraft(e.target.value);
+                const next = parseVolumeInput(e.target.value);
+                if (next !== null) applyVolume(next);
+              }}
+              onFocus={(e) => e.currentTarget.select()}
+              /* Dropping the draft hands the field back to the volume, which
+                 is what normalises "007" or an abandoned empty box. */
+              onBlur={() => setVolumeDraft(null)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") e.currentTarget.blur();
+                if (e.key === "Escape") {
+                  setVolumeDraft(null);
+                  e.currentTarget.blur();
+                }
+              }}
+            />
+            <span aria-hidden="true">%</span>
+          </label>
         </div>
       </div>
 
