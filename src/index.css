@@ -730,6 +730,24 @@ body {
   visibility: hidden;
 }
 
+.copy-link {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.copy-link:hover {
+  color: var(--text);
+}
+
+.playlist-contents .copy-link {
+  font-size: 11px;
+  padding: 0 4px;
+}
+
 .drag-handle {
   color: var(--text-faint);
   cursor: grab;
