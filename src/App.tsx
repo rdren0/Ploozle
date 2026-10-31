@@ -14,6 +14,7 @@ import {
 import { hasOtherGmRunning, isAdvancer as electAdvancer } from "./lib/advancer";
 import { parseLink } from "./lib/parseLink";
 import { fetchTitle } from "./lib/fetchTitle";
+import { copyText } from "./lib/copyText";
 import { PlayerStage } from "./components/PlayerStage";
 import { notifyGesture, unmuteAll } from "./lib/audioGestures";
 import {
@@ -107,6 +108,10 @@ export default function App() {
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [playlistIds, setPlaylistIds] = useState<string[]>([]);
   const [playlistTitles, setPlaylistTitles] = useState<Record<string, string>>({});
+  // Which row's link was just copied, and whether it worked, so the button can
+  // answer the press. Clears itself; see `copyLink`.
+  const [copyResult, setCopyResult] = useState<{ key: string; copied: boolean } | null>(null);
+  const copyTimer = useRef(0);
   // This client's live playback position, kept out of state so the 2s
   // heartbeat doesn't re-render the whole popover.
   const positionRef = useRef(0);
@@ -530,6 +535,28 @@ export default function App() {
     window.setTimeout(() => {
       if (roomRef.current.anchorAt === anchorAt) advanceQueue();
     }, ENDED_TAKEOVER_MS);
+  }
+
+  async function copyLink(key: string, url: string) {
+    const copied = await copyText(url);
+    setCopyResult({ key, copied });
+    window.clearTimeout(copyTimer.current);
+    copyTimer.current = window.setTimeout(() => setCopyResult(null), 1500);
+  }
+
+  /** Open to everyone, so unlike the row's other buttons it ignores `canControl`. */
+  function copyButton(key: string, url: string, title: string) {
+    const result = copyResult?.key === key ? copyResult : null;
+    return (
+      <button
+        className="copy-link"
+        onClick={() => copyLink(key, url)}
+        title={result ? (result.copied ? "Copied" : "Couldn't copy the link") : "Copy link"}
+        aria-label={`Copy link to ${title}`}
+      >
+        {result ? (result.copied ? "✓" : "!") : "⧉"}
+      </button>
+    );
   }
 
   /** A listener without control proposes a track for a GM or DJ to approve. */
@@ -1051,6 +1078,7 @@ export default function App() {
                   </button>
                 </span>
               )}
+              {copyButton(item.id, item.url, item.title)}
               <button className="remove" onClick={() => removeAt(index)} disabled={!canControl} title="Remove">
                 ✕
               </button>
@@ -1072,6 +1100,11 @@ export default function App() {
                   <a href={`https://www.youtube.com/watch?v=${id}`} target="_blank" rel="noreferrer">
                     {playlistTitles[id] ?? "Loading…"}
                   </a>
+                  {copyButton(
+                    `${id}-${i}`,
+                    `https://www.youtube.com/watch?v=${id}`,
+                    playlistTitles[id] ?? "this track"
+                  )}
                 </li>
               ))}
             </ol>
