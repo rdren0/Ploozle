@@ -36,6 +36,22 @@ export function usePlayerId(ready: boolean): string | null {
   return id;
 }
 
+/** This window's own id. Unlike the player id, no other window shares it. */
+export function useConnectionId(ready: boolean): string | null {
+  const [id, setId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!ready) return;
+    let unsubscribed = false;
+    OBR.player.getConnectionId().then((value) => {
+      if (!unsubscribed) setId(value);
+    });
+    return () => {
+      unsubscribed = true;
+    };
+  }, [ready]);
+  return id;
+}
+
 /** The current player's display name, so their requests can be attributed. */
 export function usePlayerName(ready: boolean): string {
   const [name, setName] = useState("Someone");
@@ -151,7 +167,10 @@ export function usePresence(ready: boolean) {
   }, [ready]);
 }
 
-/** Every other connected player in the room (excludes the local client). */
+/**
+ * Every other connection in the room (excludes the local client). Another
+ * window of this same account is in here too, under this player's own id.
+ */
 export function useParty(ready: boolean): PartyMember[] {
   const [party, setParty] = useState<PartyMember[]>([]);
   useEffect(() => {
@@ -162,6 +181,7 @@ export function useParty(ready: boolean): PartyMember[] {
         const beat = p.metadata?.[PRESENCE_KEY];
         return {
           id: p.id,
+          connectionId: p.connectionId,
           name: p.name,
           role: p.role,
           presentAt: typeof beat === "number" ? beat : null,

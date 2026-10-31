@@ -338,6 +338,17 @@ body {
   color: var(--accent-fg);
 }
 
+.primary-window {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.primary-window .hint {
+  margin: 0;
+}
+
 /* Rides the transport row with the play and clear buttons, pushed to the far
    end by the auto margin — it configures the room rather than driving it, so
    it sits apart from the controls that do. The volume below claims a whole

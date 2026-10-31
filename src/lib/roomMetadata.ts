@@ -15,6 +15,7 @@ export const METADATA_GROUPS = {
   "rodeo.ploozle/queue": ["queue"],
   "rodeo.ploozle/requests": ["requests"],
   "rodeo.ploozle/access": ["djIds"],
+  "rodeo.ploozle/primary": ["primaryConnectionId"],
   "rodeo.ploozle/ambience": ["ambience"],
 } as const satisfies Record<string, readonly (keyof RoomState)[]>;
 

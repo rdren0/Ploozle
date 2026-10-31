@@ -58,6 +58,12 @@ export interface RoomState {
   currentIndex: number; // -1 if nothing is loaded
   isPlaying: boolean;
   djIds: string[]; // player ids granted DJ privileges by the GM, in addition to the GM
+  /**
+   * The GM window used most recently, which drives the queue when several are
+   * open. A connection id rather than a player id, since those windows share
+   * one. Lapses by itself once that window is gone: see lib/advancer.
+   */
+  primaryConnectionId: string | null;
   requests: SongRequest[]; // pending listener suggestions
   ambience: AmbienceStream[]; // looping beds that play under the queue
   /**
@@ -74,6 +80,7 @@ export const EMPTY_ROOM_STATE: RoomState = {
   currentIndex: -1,
   isPlaying: false,
   djIds: [],
+  primaryConnectionId: null,
   requests: [],
   ambience: [],
   anchorPosition: 0,
