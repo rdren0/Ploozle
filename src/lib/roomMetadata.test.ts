@@ -116,7 +116,15 @@ describe("metadataUpdateFor", () => {
     it("writes every group so nothing in the legacy key is lost", () => {
       const update = metadataUpdateFor(next, { isPlaying: true }, true);
       expect(new Set(Object.keys(update))).toEqual(
-        new Set([PLAYBACK, QUEUE, REQUESTS, ACCESS, "rodeo.ploozle/ambience", ROOM_METADATA_KEY])
+        new Set([
+          PLAYBACK,
+          QUEUE,
+          REQUESTS,
+          ACCESS,
+          "rodeo.ploozle/primary",
+          "rodeo.ploozle/ambience",
+          ROOM_METADATA_KEY,
+        ])
       );
     });
 

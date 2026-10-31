@@ -6,7 +6,7 @@ const now = 1_000_000;
 const old = { isPlaying: true, anchorAt: now - STALE_PLAYBACK_MS - 1 };
 
 function listener(presentAt: number | null): AdvancerCandidate {
-  return { id: "p1", role: "PLAYER", presentAt };
+  return { id: "p1", connectionId: "c1", role: "PLAYER", presentAt };
 }
 
 describe("isStalePlayback", () => {

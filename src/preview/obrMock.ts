@@ -15,6 +15,7 @@ type Listener<T> = (value: T) => void;
 
 interface PartyMember {
   id: string;
+  connectionId: string;
   name: string;
   role: Role;
 }
@@ -40,8 +41,8 @@ const state = {
   roomMetadata: {} as Record<string, unknown>,
   playerMetadata: {} as Record<string, unknown>,
   party: [
-    { id: "player-ana", name: "Ana", role: "PLAYER" as Role },
-    { id: "player-bo", name: "Bo", role: "PLAYER" as Role },
+    { id: "player-ana", connectionId: "conn-ana", name: "Ana", role: "PLAYER" as Role },
+    { id: "player-bo", connectionId: "conn-bo", name: "Bo", role: "PLAYER" as Role },
   ] as PartyMember[],
 };
 
@@ -84,6 +85,9 @@ const OBR = {
     },
     async getId() {
       return self().id;
+    },
+    async getConnectionId() {
+      return "conn-me";
     },
     async getName() {
       return self().name;

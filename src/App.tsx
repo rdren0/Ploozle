@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   useIsGM,
   useAutoHeight,
+  useConnectionId,
   useObrReady,
   useObrTheme,
   usePlayerId,
@@ -10,7 +11,7 @@ import {
   usePresence,
   useRoomState,
 } from "./lib/useOwlbear";
-import { isAdvancer as electAdvancer } from "./lib/advancer";
+import { hasOtherGmRunning, isAdvancer as electAdvancer } from "./lib/advancer";
 import { parseLink } from "./lib/parseLink";
 import { fetchTitle } from "./lib/fetchTitle";
 import { PlayerStage } from "./components/PlayerStage";
@@ -43,6 +44,13 @@ import { initialWatch, observedRoom } from "./lib/roomStart";
 import { appendToQueue } from "./lib/queueAdd";
 import { isStalePlayback } from "./lib/stalePlayback";
 
+/**
+ * How long a controller whose player finished waits for the advancer to move
+ * the queue before doing it itself. Longer than players are allowed to drift
+ * apart, so a healthy advancer that is just a little behind gets there first.
+ */
+const ENDED_TAKEOVER_MS = 8000;
+
 /** Where questions, bugs and requests go. Mirrored in the manifest's homepage_url. */
 const ISSUES_URL = "https://github.com/rdren0/Ploozle/issues";
 /** The fallback channel: opening a GitHub issue requires an account, and most
@@ -56,6 +64,7 @@ export default function App() {
   usePresence(ready);
   const isGM = useIsGM(ready);
   const playerId = usePlayerId(ready);
+  const connectionId = useConnectionId(ready);
   const playerName = usePlayerName(ready);
   const party = useParty(ready);
   const [room, patchRoom, roomLoaded] = useRoomState(ready);
@@ -101,6 +110,9 @@ export default function App() {
   // This client's live playback position, kept out of state so the 2s
   // heartbeat doesn't re-render the whole popover.
   const positionRef = useRef(0);
+  // When that position was read. A background window's timers get throttled to
+  // as little as once a minute, so "now" can be well after the reading.
+  const positionAtRef = useRef(0);
   // Whether this browser is actually producing audio, which is not the same as
   // the room wanting it to.
   const [localPlaying, setLocalPlaying] = useState(false);
@@ -248,6 +260,25 @@ export default function App() {
   roomRef.current = room;
   const partyRef = useRef(party);
   partyRef.current = party;
+
+  /**
+   * With several GM windows open, the music follows whichever one was used
+   * last. That is the one the GM is at, and the click is also the gesture its
+   * player needs before the browser will let it sound. Only this panel can be
+   * watched: clicks on Owlbear's map never reach this frame. Nothing is written
+   * for a lone GM, who has no choice to record.
+   */
+  useEffect(() => {
+    if (!isGM || !connectionId) return;
+    const claim = () => {
+      if (roomRef.current.primaryConnectionId === connectionId) return;
+      if (hasOtherGmRunning(partyRef.current)) patchRoom({ primaryConnectionId: connectionId });
+    };
+    document.addEventListener("click", claim);
+    return () => document.removeEventListener("click", claim);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isGM, connectionId]);
+
   useEffect(() => {
     if (!roomLoaded || !isGM || stalenessChecked.current) return;
     stalenessChecked.current = true;
@@ -280,16 +311,20 @@ export default function App() {
 
 
   // Long tracks drift, so the client driving the queue republishes its position
-  // periodically. Exactly one writer, same as auto-advance.
+  // periodically. Exactly one writer, same as auto-advance. Every client seeks
+  // to what is published here, so a window whose player isn't running has to
+  // stay out of it: its zero would send the whole room back to the top of the
+  // track. A reading from before the current anchor belongs to an earlier
+  // track or position, and is no use either.
   useEffect(() => {
-    if (!room.isPlaying) return;
+    if (!room.isPlaying || !localPlaying) return;
     const timer = window.setInterval(() => {
-      if (!isAdvancer()) return;
-      patchRoom({ anchorPosition: positionRef.current, anchorAt: Date.now() });
+      if (!isAdvancer() || positionAtRef.current <= roomRef.current.anchorAt) return;
+      patchRoom({ anchorPosition: positionRef.current, anchorAt: positionAtRef.current });
     }, 15000);
     return () => window.clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [room.isPlaying, room.currentIndex, isGM, isDJ, playerId, party.length]);
+  }, [room.isPlaying, room.currentIndex, localPlaying, isGM, isDJ, connectionId, party.length]);
 
   // Look up titles for the tracks inside an expanded playlist, keylessly.
   useEffect(() => {
@@ -333,7 +368,7 @@ export default function App() {
     );
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [room.requests, playerId, isGM, isDJ, party]);
+  }, [room.requests, connectionId, isGM, isDJ, party]);
 
   function setDJ(id: string, granted: boolean) {
     if (!isGM) return;
@@ -367,9 +402,17 @@ export default function App() {
     return { anchorPosition: 0, anchorAt: Date.now() };
   }
 
-  /** Anchor at wherever this client currently is, for pause/resume in place. */
+  /**
+   * Anchor at wherever this client currently is, for pause/resume in place. A
+   * window that isn't playing has no place of its own, so pressing pause there
+   * holds the room where the room already is.
+   */
   function anchorHere() {
-    return { anchorPosition: positionRef.current, anchorAt: Date.now() };
+    const now = Date.now();
+    if (localPlaying) return { anchorPosition: positionRef.current, anchorAt: now };
+    const { anchorPosition, anchorAt, isPlaying } = roomRef.current;
+    const elapsed = isPlaying && anchorAt ? Math.max(now - anchorAt, 0) / 1000 : 0;
+    return { anchorPosition: anchorPosition + elapsed, anchorAt: now };
   }
 
   function playAt(index: number) {
@@ -450,16 +493,43 @@ export default function App() {
     patchRoom({ queue: [], currentIndex: -1, isPlaying: false });
   }
 
-  /** Whether this client is the one that drives the queue forward. */
+  /**
+   * Whether this client is the one that drives the queue forward. Read through
+   * the refs because this runs from timers: a party captured when the timer
+   * started shows everyone's presence expiring, and each window electing itself.
+   */
   function isAdvancer(): boolean {
-    return electAdvancer({ isGM, isDJ, playerId, djIds: room.djIds, party });
+    return electAdvancer({
+      isGM,
+      isDJ,
+      connectionId,
+      djIds: roomRef.current.djIds,
+      primaryConnectionId: roomRef.current.primaryConnectionId,
+      party: partyRef.current,
+    });
+  }
+
+  function advanceQueue() {
+    const { queue, currentIndex } = roomRef.current;
+    if (queue.length === 0) return;
+    const next = (currentIndex + 1) % queue.length;
+    patchRoom({ currentIndex: next, isPlaying: true, ...restartAnchor() });
   }
 
   function handleEnded() {
-    if (!isAdvancer()) return;
-    if (room.queue.length === 0) return;
-    const next = (room.currentIndex + 1) % room.queue.length;
-    patchRoom({ currentIndex: next, isPlaying: true, ...restartAnchor() });
+    if (isAdvancer()) {
+      advanceQueue();
+      return;
+    }
+    if (!canControl) return;
+    // The advancer may never hear this track end: its panel can have closed
+    // without its presence expiring yet, or the browser can have refused it
+    // audio. Each client hears "ended" only once, so nothing would retry. Any
+    // move of the anchor in the meantime means someone is driving after all.
+    const anchorAt = roomRef.current.anchorAt;
+    window.setTimeout(() => {
+      if (roomRef.current.anchorAt === anchorAt) advanceQueue();
+    }, ENDED_TAKEOVER_MS);
   }
 
   /** A listener without control proposes a track for a GM or DJ to approve. */
@@ -540,6 +610,7 @@ export default function App() {
           anchorAt={room.anchorAt}
           onTime={(seconds) => {
             positionRef.current = seconds;
+            positionAtRef.current = Date.now();
           }}
           onAutoMuted={() => {
             setMuted(true);
@@ -755,6 +826,20 @@ export default function App() {
         </p>
       )}
       {!isGM && isDJ && <p className="hint hint--dj">You have DJ access.</p>}
+      {/* Only a real choice gets a banner. The button has no handler of its
+          own: any click in this panel takes over, so this one does too. */}
+      {isGM && !!connectionId && hasOtherGmRunning(party) && (
+        <div className="primary-window">
+          {isAdvancer() ? (
+            <p className="hint hint--dj">Another GM window is open. This one runs the music.</p>
+          ) : (
+            <>
+              <p className="hint hint--dj">Another GM window runs the music.</p>
+              <button className="dj-grant">Run it from here</button>
+            </>
+          )}
+        </div>
+      )}
 
       {isGM && showDjPanel && (
         <div className="dj-panel">
